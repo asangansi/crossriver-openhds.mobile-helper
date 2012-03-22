@@ -21,7 +21,7 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.util.EntityUtils;
 import org.openhds.android.BadXmlException;
 import org.openhds.android.model.FormSubmissionRecord;
-import org.openhds.android.storage.FormSubmissionStorage;
+import org.openhds.android.storage.PersistentStore;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -42,7 +42,7 @@ public class DownloadFormsTask extends
 	private String user;
 	private TaskListener listener;
 	private URL url;
-	private FormSubmissionStorage storage;
+	private PersistentStore storage;
 
 	public interface TaskListener {
 		void onFailedAuthentication();
@@ -66,7 +66,7 @@ public class DownloadFormsTask extends
 		this.user = user;
 		this.password = password;
 		this.listener = listener;
-		storage = new FormSubmissionStorage(context);
+		storage = new PersistentStore(context);
 	}
 
 	@Override
