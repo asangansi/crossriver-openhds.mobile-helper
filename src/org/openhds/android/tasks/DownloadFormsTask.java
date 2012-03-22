@@ -3,6 +3,8 @@ package org.openhds.android.tasks;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -19,10 +21,12 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.util.EntityUtils;
 import org.openhds.android.BadXmlException;
 import org.openhds.android.model.FormSubmissionRecord;
+import org.openhds.android.storage.FormSubmissionStorage;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
+import android.content.Context;
 import android.os.AsyncTask;
 
 /**
@@ -38,6 +42,7 @@ public class DownloadFormsTask extends
 	private String user;
 	private TaskListener listener;
 	private URL url;
+	private FormSubmissionStorage storage;
 
 	public interface TaskListener {
 		void onFailedAuthentication();
@@ -56,11 +61,12 @@ public class DownloadFormsTask extends
 	}
 
 	public DownloadFormsTask(URL url, String user, String password,
-			TaskListener listener) {
+			TaskListener listener, Context context) {
 		this.url = url;
 		this.user = user;
 		this.password = password;
 		this.listener = listener;
+		storage = new FormSubmissionStorage(context);
 	}
 
 	@Override
@@ -126,16 +132,17 @@ public class DownloadFormsTask extends
 		HttpEntity entity = response.getEntity();
 		StringReader reader = new StringReader(EntityUtils.toString(entity));
 
-		parseResponseXml(reader);
+		List<FormSubmissionRecord> records = parseResponseXml(reader);
+		saveRecords(records);
 	}
 
-	private void parseResponseXml(StringReader reader) throws BadXmlException,
-			IOException {
+	private List<FormSubmissionRecord> parseResponseXml(StringReader reader)
+			throws BadXmlException, IOException {
 		try {
 			XmlPullParser parser = buildXmlPullParser(reader);
 			validateStartOfXmlDocument(parser);
 			validateDocumentElement(parser);
-			parseSubmissionSet(parser);
+			return parseSubmissionSet(parser);
 		} catch (XmlPullParserException e) {
 			throw new BadXmlException("Bad XML Document");
 		}
@@ -170,23 +177,26 @@ public class DownloadFormsTask extends
 		return eventType == XmlPullParser.START_TAG;
 	}
 
-	private void parseSubmissionSet(XmlPullParser parser)
+	private List<FormSubmissionRecord> parseSubmissionSet(XmlPullParser parser)
 			throws XmlPullParserException, IOException, BadXmlException {
+		List<FormSubmissionRecord> records = new ArrayList<FormSubmissionRecord>();
 		int eventType = parser.next();
 		if (!isStartTag(eventType) && !"submissions".equals(parser.getName())) {
 			throw new BadXmlException("submissions");
 		}
 		while (!isEndTag(eventType) || !"submissions".equals(parser.getName())) {
-			parseSubmission(parser);
+			records.add(parseSubmission(parser));
 			eventType = parser.next();
 		}
+
+		return records;
 	}
 
 	private boolean isEndTag(int eventType) {
 		return eventType == XmlPullParser.END_TAG;
 	}
 
-	private void parseSubmission(XmlPullParser parser)
+	private FormSubmissionRecord parseSubmission(XmlPullParser parser)
 			throws XmlPullParserException, IOException, BadXmlException {
 		int eventType = parser.getEventType();
 		if (!isStartTag(eventType)
@@ -215,6 +225,8 @@ public class DownloadFormsTask extends
 				parseFormErrors(parser, record);
 			}
 		}
+
+		return record;
 	}
 
 	private void checkTextPresent(XmlPullParser parser)
@@ -253,6 +265,12 @@ public class DownloadFormsTask extends
 	private boolean isTextEvent(int eventType) {
 		return eventType == XmlPullParser.TEXT;
 	}
+
+	private void saveRecords(List<FormSubmissionRecord> records) {
+		for(FormSubmissionRecord record : records) {
+			storage.saveFormSubmission(record);
+		}
+	}	
 
 	@Override
 	protected void onPostExecute(DownloadFormsTask.EndResult result) {

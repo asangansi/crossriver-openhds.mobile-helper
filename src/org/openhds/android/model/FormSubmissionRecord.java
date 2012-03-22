@@ -26,4 +26,19 @@ public class FormSubmissionRecord {
 		errors .add(text);
 	}
 
+	public String getFormOwnerId() {
+		return formOwnerId;
+	}
+
+	public String getFormType() {
+		return formType;
+	}
+
+	public String getFormInstance() {
+		return partialForm;
+	}
+
+	public List<String> getErrors() {
+		return errors;
+	}
 }

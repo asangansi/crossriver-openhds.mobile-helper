@@ -66,7 +66,7 @@ public class OpenHDSMobileHelperActivity extends Activity {
 							public void onSuccess() {
 								showToastWithText("Download all forms successfully");
 							}
-						});
+						}, getBaseContext());
 				task.execute();
 			}
         });
