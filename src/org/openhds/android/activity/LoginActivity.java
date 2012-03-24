@@ -1,5 +1,6 @@
-package org.openhds.android;
+package org.openhds.android.activity;
 
+import org.openhds.android.R;
 import org.openhds.android.storage.PersistentStore;
 import org.openhds.android.tasks.LoginTask;
 
@@ -33,7 +34,7 @@ public class LoginActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.login);
 
-		// getApplicationContext().deleteDatabase("form_submission");
+		//getApplicationContext().deleteDatabase("form_submission");
 
 		Button loginBtn = (Button) findViewById(R.id.login_btn);
 		userTxt = (TextView) findViewById(R.id.user_txt);
@@ -137,8 +138,8 @@ public class LoginActivity extends Activity {
 
 	private void startMainFormActivity() {
 		Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-		intent.putExtra("username", userTxt.getText().toString());
-		intent.putExtra("password", passTxt.getText().toString());
+		intent.putExtra(ActivityConstants.USERNAME_PARAM, userTxt.getText().toString());
+		intent.putExtra(ActivityConstants.PASSWORD_PARAM, passTxt.getText().toString());
 		passTxt.setText("");
 		startActivity(intent);
 	}

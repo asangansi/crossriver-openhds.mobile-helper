@@ -1,4 +1,8 @@
-package org.openhds.android;
+package org.openhds.android.activity;
+
+import org.openhds.android.R;
+import org.openhds.android.R.layout;
+import org.openhds.android.R.string;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;

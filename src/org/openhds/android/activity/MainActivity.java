@@ -1,8 +1,12 @@
-package org.openhds.android;
+package org.openhds.android.activity;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.openhds.android.R;
+import org.openhds.android.R.id;
+import org.openhds.android.R.layout;
+import org.openhds.android.R.string;
 import org.openhds.android.tasks.DownloadFormsTask;
 
 import android.app.Activity;
@@ -18,8 +22,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
-	private static final String USER_PARAM = "username";
-	private static final String PASSWORD_PARAM = "password";
 	private String username;
 	private String password;
 
@@ -28,11 +30,20 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		
-		username = getIntent().getExtras().getString(USER_PARAM);
-		password = getIntent().getExtras().getString(PASSWORD_PARAM);
+		username = getIntent().getExtras().getString(ActivityConstants.USERNAME_PARAM);
+		password = getIntent().getExtras().getString(ActivityConstants.PASSWORD_PARAM);
 
 		Button downloadBtn = (Button) findViewById(R.id.download_btn);
 		downloadBtn.setOnClickListener(new DownloadButtonListener());
+		
+		Button viewFormBtn = (Button) findViewById(R.id.view_form_btn);
+		viewFormBtn.setOnClickListener(new OnClickListener() {
+			public void onClick(View arg0) {
+				Intent intent = new Intent(getApplicationContext(), FormListActivitity.class);
+				intent.putExtra(ActivityConstants.USERNAME_PARAM, username);
+				startActivity(intent);
+			}
+		});
 		
 		Button logoutBtn = (Button) findViewById(R.id.logout_btn);
 		logoutBtn.setOnClickListener(new OnClickListener() {
