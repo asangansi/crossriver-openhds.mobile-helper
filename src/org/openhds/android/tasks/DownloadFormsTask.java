@@ -92,7 +92,7 @@ public class DownloadFormsTask extends
 		} catch (IOException e) {
 			return EndResult.CONNECTION_ERROR;
 		} catch (BadXmlException e) {
-			return EndResult.BAD_AUTHENTICATION;
+			return EndResult.BAD_XML;
 		}
 	}
 
@@ -242,6 +242,11 @@ public class DownloadFormsTask extends
 			FormSubmissionRecord record) throws XmlPullParserException,
 			IOException, BadXmlException {
 		int eventType = parser.next();
+		
+		if (isEndTag(eventType)) {
+			return; // no form errors
+		}
+		
 		if (!isStartTag(eventType) && !"formError".equals(parser.getName())) {
 			throw new BadXmlException("formErrors");
 		}
