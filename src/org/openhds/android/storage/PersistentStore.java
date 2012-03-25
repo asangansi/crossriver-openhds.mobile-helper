@@ -99,7 +99,6 @@ public class PersistentStore {
 			boolean found = c.moveToNext();
 			if (!found) {
 				c.close();
-				boolean i = db.isOpen();
 				return null;
 			}
 
@@ -110,6 +109,8 @@ public class PersistentStore {
 			c.close();
 		} catch (Exception e) {
 			Log.w("findUserByUsername", e.getMessage());
+		} finally {
+			db.close();
 		}
 
 		return user;
@@ -122,6 +123,7 @@ public class PersistentStore {
 	public long userCount() {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
 		long rows = DatabaseUtils.queryNumEntries(db, USER_TABLE_NAME);
+		db.close();
 
 		return rows;
 	}
@@ -154,5 +156,30 @@ public class PersistentStore {
 
 	private String[] getFormColumns() {
 		return new String[] { KEY_ID, KEY_FORM_TYPE, KEY_FORMOWNER_ID };
+	}
+
+	public FormSubmissionRecord findSubmissionById(long id) {
+		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		Cursor cusor = db.query(FORM_TABLE_NAME, null, KEY_ID + " = ?",
+				new String[] { id + "" }, null, null, null);
+		cusor.moveToNext();
+		FormSubmissionRecord record = new FormSubmissionRecord();
+		record.setId(cusor.getLong(cusor.getColumnIndex(KEY_ID)));
+		record.setFormOwnerId(cusor.getString(cusor
+				.getColumnIndex(KEY_FORMOWNER_ID)));
+		record.setFormType(cusor.getString(cusor.getColumnIndex(KEY_FORM_TYPE)));
+		record.setPartialFormData(cusor.getString(cusor
+				.getColumnIndex(KEY_FORM_INSTANCE)));
+		cusor.close();
+
+		cusor = db.query(ERROR_TABLE_NAME, null, KEY_FORM_ID + " = ?",
+				new String[] { id + "" }, null, null, null);
+		while(cusor.moveToNext()) {
+			record.addErrorMessage(cusor.getString(cusor.getColumnIndex(KEY_FORM_MSG)));
+		}
+		cusor.close();
+		db.close();
+		
+		return record;
 	}
 }

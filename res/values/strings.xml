@@ -15,5 +15,10 @@
     <string name="download_forms_summary">Download most recent forms from server</string>
     <string name="view_forms_btn">View My Forms</string>
     <string name="logout_btn">Logout</string>
+    <string name="send_to_odk_btn">Edit in ODK</string>
+    <string name="form_view_lbl">Form View</string>
+    <string name="location_lbl">Location:</string>
+    <string name="owner_txt">Form Owner Id:</string>
+    <string name="failure_reasons_txt">Failure messages:</string>
 
 </resources>

@@ -3,8 +3,11 @@ package org.openhds.android.activity;
 import org.openhds.android.storage.PersistentStore;
 
 import android.app.ListActivity;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
 public class FormListActivitity extends ListActivity {
@@ -27,6 +30,13 @@ public class FormListActivitity extends ListActivity {
 		startManagingCursor(formInstanceCursor);
 		
 		setListAdapter(adapter);
+	}
+
+	@Override
+	protected void onListItemClick(ListView l, View v, int position, long id) {
+		Intent intent = new Intent(getApplicationContext(), FormViewActivity.class);
+		intent.putExtra(ActivityConstants.FORM_ID, id);
+		startActivity(intent);
 	}
 
 }

@@ -247,24 +247,28 @@ public class DownloadFormsTask extends
 			return; // no form errors
 		}
 		
-		if (!isStartTag(eventType) && !"formError".equals(parser.getName())) {
-			throw new BadXmlException("formErrors");
+		while(!isEndTag(eventType) || !"formErrors".equals(parser.getName())) {
+			if (!isStartTag(eventType) && !"formError".equals(parser.getName())) {
+				throw new BadXmlException("formErrors");
+			}
+	
+			eventType = parser.next();
+			if (!"error".equals(parser.getName())) {
+				throw new BadXmlException("error");
+			}
+	
+			eventType = parser.next();
+			if (!isTextEvent(eventType)) {
+				throw new BadXmlException("No error text");
+			}
+	
+			record.addErrorMessage(parser.getText());
+	
+			parser.next(); // error tag
+			parser.next(); // formError tag
+			
+			eventType = parser.next();
 		}
-
-		eventType = parser.next();
-		if (!"error".equals(parser.getName())) {
-			throw new BadXmlException("error");
-		}
-
-		eventType = parser.next();
-		if (!isTextEvent(eventType)) {
-			throw new BadXmlException("No error text");
-		}
-
-		record.addErrorMessage(parser.getText());
-
-		parser.next(); // error tag
-		parser.next(); // formError tag
 	}
 
 	private boolean isTextEvent(int eventType) {

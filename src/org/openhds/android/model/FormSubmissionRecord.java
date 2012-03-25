@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FormSubmissionRecord {
-	
+	private long id;
 	private String formOwnerId;
 	private String formType;
 	private String partialForm;
@@ -23,7 +23,7 @@ public class FormSubmissionRecord {
 	}
 
 	public void addErrorMessage(String text) {
-		errors .add(text);
+		errors.add(text);
 	}
 
 	public String getFormOwnerId() {
@@ -40,5 +40,9 @@ public class FormSubmissionRecord {
 
 	public List<String> getErrors() {
 		return errors;
+	}
+
+	public void setId(long id) {
+		this.id = id;
 	}
 }
