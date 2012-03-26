@@ -217,7 +217,7 @@ public class DownloadFormsTask extends
 				checkTextPresent(parser);
 				record.setFormType(parser.getText());
 			} else if (isStartTag(eventType)
-					&& "formInstance".equals(parser.getName())) {
+					&& "formInstanceXml".equals(parser.getName())) {
 				checkTextPresent(parser);
 				record.setPartialFormData(parser.getText());
 			} else if (isStartTag(eventType)

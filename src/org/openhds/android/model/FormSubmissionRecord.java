@@ -8,6 +8,8 @@ public class FormSubmissionRecord {
 	private String formOwnerId;
 	private String formType;
 	private String partialForm;
+	private String saveDate;
+	private String odkUri;
 	private List<String> errors = new ArrayList<String>();
 
 	public void setFormOwnerId(String text) {
@@ -20,6 +22,10 @@ public class FormSubmissionRecord {
 
 	public void setPartialFormData(String text) {
 		this.partialForm = text;
+	}
+	
+	public String getPartialForm() {
+		return partialForm;
 	}
 
 	public void addErrorMessage(String text) {
@@ -34,15 +40,31 @@ public class FormSubmissionRecord {
 		return formType;
 	}
 
-	public String getFormInstance() {
-		return partialForm;
-	}
-
 	public List<String> getErrors() {
 		return errors;
 	}
 
 	public void setId(long id) {
 		this.id = id;
+	}
+
+	public String getSaveDate() {
+		return saveDate;
+	}
+	
+	public void setSaveDate(String dateTime) {
+		this.saveDate = dateTime;
+	}
+
+	public String getOdkUri() {
+		return odkUri;
+	}
+
+	public void setOdkUri(String odkUri) {
+		this.odkUri = odkUri;
+	}
+
+	public long getId() {
+		return id;
 	}
 }

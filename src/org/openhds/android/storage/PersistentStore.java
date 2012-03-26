@@ -1,5 +1,8 @@
 package org.openhds.android.storage;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.openhds.android.model.FormSubmissionRecord;
 import org.openhds.android.model.User;
 
@@ -9,6 +12,7 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.net.Uri;
 import android.util.Log;
 
 /**
@@ -21,13 +25,17 @@ public class PersistentStore {
 	private static final String KEY_ID = "_id";
 
 	private static final String FORM_TABLE_NAME = "formsubmission";
+	public static final String KEY_REMOTE_ID = "remote_id";
 	public static final String KEY_FORMOWNER_ID = "form_owner_id";
 	public static final String KEY_FORM_TYPE = "form_type";
 	public static final String KEY_FORM_INSTANCE = "form_instance";
+	public static final String KEY_FORM_DATETIME = "form_datetime";
+	public static final String KEY_ODK_URI = "odk_uri";
 	private static final String FORM_DB_CREATE = "CREATE TABLE "
 			+ FORM_TABLE_NAME + " (" + KEY_ID + " INTEGER PRIMARY KEY, "
 			+ KEY_FORMOWNER_ID + " TEXT, " + KEY_FORM_TYPE + " TEXT, "
-			+ KEY_FORM_INSTANCE + " TEXT)";
+			+ KEY_FORM_INSTANCE + " TEXT, " + KEY_FORM_DATETIME + " TEXT, "
+			+ KEY_REMOTE_ID + " INTEGER, " + KEY_ODK_URI + " TEXT)";
 
 	private static final String ERROR_TABLE_NAME = "formsubmission_msg";
 	public static final String KEY_FORM_ID = "form_id";
@@ -42,6 +50,9 @@ public class PersistentStore {
 	private static final String USER_DB_CREATE = "CREATE TABLE "
 			+ USER_TABLE_NAME + " (" + KEY_ID + " INTEGER PRIMARY KEY, "
 			+ KEY_USER_NAME + " TEXT, " + KEY_USER_PASS + " TEXT)";
+
+	private static final SimpleDateFormat dateFormat = new SimpleDateFormat(
+			"yyyy-MM-dd_HH_mm_ss");
 
 	private static class DbHelper extends SQLiteOpenHelper {
 
@@ -74,7 +85,8 @@ public class PersistentStore {
 			ContentValues cv = new ContentValues();
 			cv.put(KEY_FORMOWNER_ID, fs.getFormOwnerId());
 			cv.put(KEY_FORM_TYPE, fs.getFormType());
-			cv.put(KEY_FORM_INSTANCE, fs.getFormInstance());
+			cv.put(KEY_FORM_INSTANCE, fs.getPartialForm());
+			cv.put(KEY_FORM_DATETIME, getCurrentDateTime());
 			long rowId = db.insert(FORM_TABLE_NAME, null, cv);
 
 			for (String error : fs.getErrors()) {
@@ -87,6 +99,10 @@ public class PersistentStore {
 		} finally {
 			db.endTransaction();
 		}
+	}
+
+	private String getCurrentDateTime() {
+		return dateFormat.format(new Date());
 	}
 
 	public User findUserByUsername(String username) {
@@ -143,6 +159,7 @@ public class PersistentStore {
 			db.endTransaction();
 		}
 
+		db.close();
 		return id;
 	}
 
@@ -170,16 +187,33 @@ public class PersistentStore {
 		record.setFormType(cusor.getString(cusor.getColumnIndex(KEY_FORM_TYPE)));
 		record.setPartialFormData(cusor.getString(cusor
 				.getColumnIndex(KEY_FORM_INSTANCE)));
+		record.setSaveDate(cusor.getString(cusor
+				.getColumnIndex(KEY_FORM_DATETIME)));
+		record.setPartialFormData(cusor.getString(cusor
+				.getColumnIndex(KEY_FORM_INSTANCE)));
+		record.setOdkUri(cusor.getString(cusor.getColumnIndex(KEY_ODK_URI)));
 		cusor.close();
 
 		cusor = db.query(ERROR_TABLE_NAME, null, KEY_FORM_ID + " = ?",
 				new String[] { id + "" }, null, null, null);
-		while(cusor.moveToNext()) {
-			record.addErrorMessage(cusor.getString(cusor.getColumnIndex(KEY_FORM_MSG)));
+		while (cusor.moveToNext()) {
+			record.addErrorMessage(cusor.getString(cusor
+					.getColumnIndex(KEY_FORM_MSG)));
 		}
 		cusor.close();
 		db.close();
-		
+
 		return record;
+	}
+
+	public void updateOdkUri(long id, Uri uri) {
+		SQLiteDatabase db = dbHelper.getWritableDatabase();
+		ContentValues cv = new ContentValues();
+		cv.put(KEY_ODK_URI, uri.toString());
+		db.beginTransaction();
+		db.update(FORM_TABLE_NAME, cv, KEY_ID + " = ?", new String[]{id + ""});
+		db.setTransactionSuccessful();
+		db.endTransaction();
+		db.close();
 	}
 }
