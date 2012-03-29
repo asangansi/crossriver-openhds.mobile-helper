@@ -89,6 +89,7 @@ public class PersistentStore {
 			cv.put(KEY_FORM_TYPE, fs.getFormType());
 			cv.put(KEY_FORM_INSTANCE, fs.getPartialForm());
 			cv.put(KEY_FORM_DATETIME, getCurrentDateTime());
+			cv.put(KEY_ODK_FORM_ID, fs.getFormId());
 			long rowId = db.insert(FORM_TABLE_NAME, null, cv);
 
 			for (String error : fs.getErrors()) {
