@@ -31,11 +31,13 @@ public class PersistentStore {
 	public static final String KEY_FORM_INSTANCE = "form_instance";
 	public static final String KEY_FORM_DATETIME = "form_datetime";
 	public static final String KEY_ODK_URI = "odk_uri";
+	public static final String KEY_ODK_FORM_ID = "form_id";
 	private static final String FORM_DB_CREATE = "CREATE TABLE "
 			+ FORM_TABLE_NAME + " (" + KEY_ID + " INTEGER PRIMARY KEY, "
 			+ KEY_FORMOWNER_ID + " TEXT, " + KEY_FORM_TYPE + " TEXT, "
 			+ KEY_FORM_INSTANCE + " TEXT, " + KEY_FORM_DATETIME + " TEXT, "
-			+ KEY_REMOTE_ID + " INTEGER, " + KEY_ODK_URI + " TEXT)";
+			+ KEY_REMOTE_ID + " INTEGER, " + KEY_ODK_URI + " TEXT, "
+			+ KEY_ODK_FORM_ID + " TEXT)";
 
 	private static final String ERROR_TABLE_NAME = "formsubmission_msg";
 	public static final String KEY_FORM_ID = "form_id";
@@ -177,30 +179,29 @@ public class PersistentStore {
 
 	public FormSubmissionRecord findSubmissionById(long id) {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
-		Cursor cusor = db.query(FORM_TABLE_NAME, null, KEY_ID + " = ?",
+		Cursor cursor = db.query(FORM_TABLE_NAME, null, KEY_ID + " = ?",
 				new String[] { id + "" }, null, null, null);
-		cusor.moveToNext();
+		cursor.moveToNext();
 		FormSubmissionRecord record = new FormSubmissionRecord();
-		record.setId(cusor.getLong(cusor.getColumnIndex(KEY_ID)));
-		record.setFormOwnerId(cusor.getString(cusor
+		record.setId(cursor.getLong(cursor.getColumnIndex(KEY_ID)));
+		record.setFormOwnerId(cursor.getString(cursor
 				.getColumnIndex(KEY_FORMOWNER_ID)));
-		record.setFormType(cusor.getString(cusor.getColumnIndex(KEY_FORM_TYPE)));
-		record.setPartialFormData(cusor.getString(cusor
+		record.setFormType(cursor.getString(cursor.getColumnIndex(KEY_FORM_TYPE)));
+		record.setPartialForm(cursor.getString(cursor
 				.getColumnIndex(KEY_FORM_INSTANCE)));
-		record.setSaveDate(cusor.getString(cusor
+		record.setSaveDate(cursor.getString(cursor
 				.getColumnIndex(KEY_FORM_DATETIME)));
-		record.setPartialFormData(cusor.getString(cusor
-				.getColumnIndex(KEY_FORM_INSTANCE)));
-		record.setOdkUri(cusor.getString(cusor.getColumnIndex(KEY_ODK_URI)));
-		cusor.close();
+		record.setOdkUri(cursor.getString(cursor.getColumnIndex(KEY_ODK_URI)));
+		record.setFormId(cursor.getString(cursor.getColumnIndex(KEY_ODK_FORM_ID)));
+		cursor.close();
 
-		cusor = db.query(ERROR_TABLE_NAME, null, KEY_FORM_ID + " = ?",
+		cursor = db.query(ERROR_TABLE_NAME, null, KEY_FORM_ID + " = ?",
 				new String[] { id + "" }, null, null, null);
-		while (cusor.moveToNext()) {
-			record.addErrorMessage(cusor.getString(cusor
+		while (cursor.moveToNext()) {
+			record.addErrorMessage(cursor.getString(cursor
 					.getColumnIndex(KEY_FORM_MSG)));
 		}
-		cusor.close();
+		cursor.close();
 		db.close();
 
 		return record;

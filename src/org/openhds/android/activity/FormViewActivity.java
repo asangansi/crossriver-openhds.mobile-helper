@@ -92,7 +92,7 @@ public class FormViewActivity extends AbstractActivity {
 				values.put(InstanceProviderAPI.InstanceColumns.DISPLAY_NAME,
 						record.getFormType());
 				values.put(InstanceProviderAPI.InstanceColumns.JR_FORM_ID,
-						"widgets");
+						record.getFormId());
 				Uri uri = getContentResolver()
 						.insert(InstanceProviderAPI.InstanceColumns.CONTENT_URI,
 								values);
@@ -104,7 +104,6 @@ public class FormViewActivity extends AbstractActivity {
 			}
 
 			Intent intent = new Intent(Intent.ACTION_EDIT, Uri.parse(record.getOdkUri()));
-			List<ResolveInfo> resolved = getPackageManager().queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
 			startActivityForResult(intent, ODK_FORM_ENTRY_RESULT);
 			return null;
 		}

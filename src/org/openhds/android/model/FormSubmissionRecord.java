@@ -10,6 +10,7 @@ public class FormSubmissionRecord {
 	private String partialForm;
 	private String saveDate;
 	private String odkUri;
+	private String formId;
 	private List<String> errors = new ArrayList<String>();
 
 	public void setFormOwnerId(String text) {
@@ -20,7 +21,7 @@ public class FormSubmissionRecord {
 		this.formType = text;
 	}
 
-	public void setPartialFormData(String text) {
+	public void setPartialForm(String text) {
 		this.partialForm = text;
 	}
 	
@@ -66,5 +67,13 @@ public class FormSubmissionRecord {
 
 	public long getId() {
 		return id;
+	}
+
+	public String getFormId() {
+		return formId;
+	}
+
+	public void setFormId(String formId) {
+		this.formId = formId;
 	}
 }

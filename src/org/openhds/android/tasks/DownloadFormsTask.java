@@ -133,10 +133,13 @@ public class DownloadFormsTask extends AbstractHttpTask<Void, Void> {
 			} else if (isStartTag(eventType)
 					&& "formInstanceXml".equals(parser.getName())) {
 				checkTextPresent(parser);
-				record.setPartialFormData(parser.getText());
+				record.setPartialForm(parser.getText());
 			} else if (isStartTag(eventType)
 					&& "formErrors".equals(parser.getName())) {
 				parseFormErrors(parser, record);
+			} else if (isStartTag(eventType) && "formId".equals(parser.getName())) {
+				checkTextPresent(parser);
+				record.setFormId(parser.getText());
 			}
 		}
 
