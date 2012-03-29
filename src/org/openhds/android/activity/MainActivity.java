@@ -1,50 +1,39 @@
 package org.openhds.android.activity;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.openhds.android.R;
-import org.openhds.android.R.id;
-import org.openhds.android.R.layout;
-import org.openhds.android.R.string;
+import org.openhds.android.tasks.AbstractHttpTask.RequestContext;
 import org.openhds.android.tasks.DownloadFormsTask;
 
-import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
 
-public class MainActivity extends Activity {
-	private String username;
-	private String password;
+public class MainActivity extends AbstractActivity {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-		
-		username = getIntent().getExtras().getString(ActivityConstants.USERNAME_PARAM);
-		password = getIntent().getExtras().getString(ActivityConstants.PASSWORD_PARAM);
 
 		Button downloadBtn = (Button) findViewById(R.id.download_btn);
 		downloadBtn.setOnClickListener(new DownloadButtonListener());
-		
+
 		Button viewFormBtn = (Button) findViewById(R.id.view_form_btn);
 		viewFormBtn.setOnClickListener(new OnClickListener() {
 			public void onClick(View arg0) {
-				Intent intent = new Intent(getApplicationContext(), FormListActivitity.class);
-				intent.putExtra(ActivityConstants.USERNAME_PARAM, username);
+				Intent intent = new Intent(getApplicationContext(),
+						FormListActivitity.class);
+				setUsernameOnIntent(intent);
 				startActivity(intent);
 			}
 		});
-		
+
 		Button logoutBtn = (Button) findViewById(R.id.logout_btn);
 		logoutBtn.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
@@ -55,30 +44,22 @@ public class MainActivity extends Activity {
 
 	private class DownloadButtonListener implements OnClickListener {
 		public void onClick(View arg0) {
-			SharedPreferences sp = getSharedPreferences(
-					getString(R.string.shared_pref_file_name), MODE_PRIVATE);
-			String url = sp.getString(
-					getString(R.string.shared_pref_server_url_key), "");
-
-			if (url.trim().length() == 0) {
-				showToastWithText("No server URL has been set. Set server URL from preferences");
-				return;
-			}
-			URL parsedUrl = null;
-			try {
-				parsedUrl = new URL(url);
-			} catch (MalformedURLException e) {
-				showToastWithText("Bad Server URL");
+			URL parsedUrl = getServerUrl("/api/form/download");
+			if (parsedUrl == null) {
 				return;
 			}
 
-			DownloadFormsTask task = new DownloadFormsTask(parsedUrl, username,
-					password, new DownloadFormsTask.TaskListener() {
+			RequestContext requestCtx = new RequestContext();
+			requestCtx.url(parsedUrl).user(getUsernameFromIntent())
+					.password(getPasswordFromIntent());
+
+			DownloadFormsTask task = new DownloadFormsTask(requestCtx,
+					new DownloadFormsTask.TaskListener() {
 						public void onFailedAuthentication() {
 							showToastWithText("Bad username and/or password");
 						}
 
-						public void onBadXmlResponse() {
+						public void onFailure() {
 							showToastWithText("There was a problem reading response from server");
 						}
 
@@ -96,10 +77,6 @@ public class MainActivity extends Activity {
 					}, getBaseContext());
 			task.execute();
 		}
-	}
-
-	private void showToastWithText(String text) {
-		Toast.makeText(this, text, Toast.LENGTH_LONG).show();
 	}
 
 	@Override

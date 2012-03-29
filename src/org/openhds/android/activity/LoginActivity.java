@@ -2,9 +2,11 @@ package org.openhds.android.activity;
 
 import org.openhds.android.R;
 import org.openhds.android.storage.PersistentStore;
+import org.openhds.android.tasks.AbstractHttpTask.RequestContext;
+import org.openhds.android.tasks.AbstractHttpTask.TaskListener;
+import org.openhds.android.tasks.AuthenticateTask;
 import org.openhds.android.tasks.LoginTask;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -17,24 +19,27 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class LoginActivity extends Activity {
+public class LoginActivity extends AbstractActivity {
 
 	private TextView userTxt;
 	private TextView passTxt;
+	private PersistentStore store;
 
 	private static final int PROGRESS_DIALOG = 0;
 	private static final int DIALOG_ADMIN_CREATED = 1;
 	private static final int DIALOG_BAD_AUTH = 2;
-	private static final int DIALOG_ERROR_ADMIN = 3;
-	private static final int DIALOG_NEW_USER = 4;
-	private static final int DIALOG_CREATED_USER = 5;
+	private static final int DIALOG_ERROR_ADMIN = 4;
+	private static final int DIALOG_NEW_USER = 8;
+	private static final int DIALOG_CREATED_USER = 16;
+	private static final int DIALOG_CONNECTION_ERROR = 32;
+	private static final int DIALOG_ERROR_USER = 64;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.login);
 
-		//getApplicationContext().deleteDatabase("form_submission");
+		// getApplicationContext().deleteDatabase("form_submission");
 
 		Button loginBtn = (Button) findViewById(R.id.login_btn);
 		userTxt = (TextView) findViewById(R.id.user_txt);
@@ -71,6 +76,12 @@ public class LoginActivity extends Activity {
 		case DIALOG_NEW_USER:
 			dialog = buildNewUserDialog();
 			break;
+		case DIALOG_CONNECTION_ERROR:
+			dialog = buildFailedDialog("There was a problem communicating with the server");
+			break;
+		case DIALOG_ERROR_USER:
+			dialog = buildFailedDialog("There was an error creating the user");
+			break;
 		default:
 			dialog = null;
 		}
@@ -85,12 +96,33 @@ public class LoginActivity extends Activity {
 						new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dialog,
 									int which) {
+								dialog.dismiss();
+								showDialog(PROGRESS_DIALOG);
+								executeAuthenticateTask();
 							}
 						})
 				.setNegativeButton("No", new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int which) {
 					}
 				}).create();
+	}
+
+	private void executeAuthenticateTask() {
+		RequestContext requestCtx = new RequestContext();
+		requestCtx.url(getServerUrl("/api/user/authenticate"))
+				.user(getUsernameValue().toUpperCase())
+				.password(getPasswordValue());
+		AuthenticateTask authenticateTask = new AuthenticateTask(requestCtx,
+				new AuthenticateListener(), getPersistentStore());
+		authenticateTask.execute();
+	}
+
+	private PersistentStore getPersistentStore() {
+		if (store == null) {
+			store = new PersistentStore(this);
+		}
+
+		return store;
 	}
 
 	private Dialog buildFailedDialog(String message) {
@@ -131,32 +163,36 @@ public class LoginActivity extends Activity {
 	protected void showProgressDialog() {
 		showDialog(PROGRESS_DIALOG);
 		PersistentStore ps = new PersistentStore(this);
-		LoginTask loginTask = new LoginTask(ps, userTxt.getText().toString(),
-				passTxt.getText().toString(), new LoginListener());
+		LoginTask loginTask = new LoginTask(ps, getUsernameValue().toUpperCase(),
+				getPasswordValue(), new LoginListener());
 		loginTask.execute(false);
 	}
 
 	private void startMainFormActivity() {
 		Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-		intent.putExtra(ActivityConstants.USERNAME_PARAM, userTxt.getText().toString());
-		intent.putExtra(ActivityConstants.PASSWORD_PARAM, passTxt.getText().toString());
+		intent.putExtra(USERNAME_PARAM, getUsernameValue());
+		intent.putExtra(PASSWORD_PARAM, getPasswordValue());
 		passTxt.setText("");
 		startActivity(intent);
 	}
 
-	private Dialog buildCreatedUserDialog() {
-		return null;
+	private String getUsernameValue() {
+		return userTxt.getText().toString();
+	}
+
+	private String getPasswordValue() {
+		return passTxt.getText().toString();
 	}
 
 	private boolean isValidated() {
-		String user = userTxt.getText().toString();
+		String user = getUsernameValue();
 		if ("".equals(user.trim())) {
 			Toast.makeText(getBaseContext(), "Please enter in a user",
 					Toast.LENGTH_LONG).show();
 			return false;
 		}
 
-		String password = passTxt.getText().toString();
+		String password = getPasswordValue();
 		if ("".equals(password.trim())) {
 			Toast.makeText(getBaseContext(), "Please enter in a password",
 					Toast.LENGTH_LONG).show();
@@ -190,6 +226,29 @@ public class LoginActivity extends Activity {
 
 		public void onCreatedUser() {
 			removeAndShow(DIALOG_CREATED_USER);
+		}
+	}
+
+	private class AuthenticateListener implements AuthenticateTask.TaskListener {
+
+		public void onFailedAuthentication() {
+			removeAndShow(DIALOG_BAD_AUTH);
+		}
+
+		public void onConnectionError() {
+			removeAndShow(DIALOG_CONNECTION_ERROR);
+		}
+
+		public void onConnectionTimeout() {
+			removeAndShow(DIALOG_CONNECTION_ERROR);
+		}
+
+		public void onSuccess() {
+			removeAndShow(DIALOG_CREATED_USER);
+		}
+
+		public void onFailure() {
+			removeAndShow(DIALOG_ERROR_USER);
 		}
 	}
 

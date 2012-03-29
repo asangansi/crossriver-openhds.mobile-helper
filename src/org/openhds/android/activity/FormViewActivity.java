@@ -28,7 +28,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class FormViewActivity extends Activity {
+public class FormViewActivity extends AbstractActivity {
 
 	private static final int ODK_FORM_ENTRY_RESULT = 1;
 	
@@ -114,7 +114,7 @@ public class FormViewActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.form_view);
-		formId = getIntent().getExtras().getLong(ActivityConstants.FORM_ID);
+		formId = getFormIdFromIntent();
 		dialog = ProgressDialog.show(this, "Loading",
 				"Loading form submission...", true);
 		store = new PersistentStore(this);

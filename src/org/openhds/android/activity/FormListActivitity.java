@@ -15,14 +15,14 @@ public class FormListActivitity extends ListActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		String user = getIntent().getExtras().getString("username");
+		String user = getIntent().getExtras().getString(AbstractActivity.USERNAME_PARAM);
 
 		PersistentStore store = new PersistentStore(this);
 
 		String[] columns = new String[] { PersistentStore.KEY_FORM_TYPE,
 				PersistentStore.KEY_FORMOWNER_ID };
 		int[] bindTo = new int[] { android.R.id.text1, android.R.id.text2 };
-		Cursor formInstanceCursor = store.getFormsForUsername(user);
+		Cursor formInstanceCursor = store.getFormsForUsername(user.toUpperCase());
 
 		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
 				android.R.layout.simple_list_item_2, formInstanceCursor,
@@ -35,8 +35,7 @@ public class FormListActivitity extends ListActivity {
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		Intent intent = new Intent(getApplicationContext(), FormViewActivity.class);
-		intent.putExtra(ActivityConstants.FORM_ID, id);
+		intent.putExtra(AbstractActivity.FORM_ID, id);
 		startActivity(intent);
 	}
-
 }
