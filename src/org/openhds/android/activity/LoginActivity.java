@@ -3,7 +3,6 @@ package org.openhds.android.activity;
 import org.openhds.android.R;
 import org.openhds.android.storage.PersistentStore;
 import org.openhds.android.tasks.AbstractHttpTask.RequestContext;
-import org.openhds.android.tasks.AbstractHttpTask.TaskListener;
 import org.openhds.android.tasks.AuthenticateTask;
 import org.openhds.android.tasks.LoginTask;
 
@@ -26,13 +25,11 @@ public class LoginActivity extends AbstractActivity {
 	private PersistentStore store;
 
 	private static final int PROGRESS_DIALOG = 0;
-	private static final int DIALOG_ADMIN_CREATED = 1;
-	private static final int DIALOG_BAD_AUTH = 2;
-	private static final int DIALOG_ERROR_ADMIN = 4;
-	private static final int DIALOG_NEW_USER = 8;
-	private static final int DIALOG_CREATED_USER = 16;
-	private static final int DIALOG_CONNECTION_ERROR = 32;
-	private static final int DIALOG_ERROR_USER = 64;
+	private static final int DIALOG_BAD_AUTH = 1;
+	private static final int DIALOG_NEW_USER = 2;
+	private static final int DIALOG_CREATED_USER = 4;
+	private static final int DIALOG_CONNECTION_ERROR = 8;
+	private static final int DIALOG_ERROR_USER = 16;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -58,17 +55,11 @@ public class LoginActivity extends AbstractActivity {
 	protected Dialog onCreateDialog(int id) {
 		Dialog dialog;
 		switch (id) {
-		case DIALOG_ADMIN_CREATED:
-			dialog = buildSuccessDialog("Successfully created admin user");
-			break;
 		case DIALOG_BAD_AUTH:
 			dialog = buildFailedDialog("Failed to authenticate username and password");
 			break;
 		case PROGRESS_DIALOG:
 			dialog = buildProgressDialog();
-			break;
-		case DIALOG_ERROR_ADMIN:
-			dialog = buildFailedDialog("There was an error creating the admin user");
 			break;
 		case DIALOG_CREATED_USER:
 			dialog = buildSuccessDialog("Successfully created new user");
@@ -214,14 +205,6 @@ public class LoginActivity extends AbstractActivity {
 
 		public void onBadAuthentication() {
 			removeAndShow(DIALOG_BAD_AUTH);
-		}
-
-		public void onErrorCreatingAdmin() {
-			removeAndShow(DIALOG_ERROR_ADMIN);
-		}
-
-		public void onCreatedAdmin() {
-			removeAndShow(DIALOG_ADMIN_CREATED);
 		}
 
 		public void onCreatedUser() {

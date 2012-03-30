@@ -17,7 +17,7 @@ public class LoginTask extends AsyncTask<Boolean, Void, LoginTask.Result> {
 	private Listener listener;
 
 	public enum Result {
-		NEW_USER, AUTHENTICATED, BAD_AUTHENTICATION, ERROR_CREATING_ADMIN, CREATED_ADMIN_SUCCESS, CREATED_USER_SUCCESS
+		NEW_USER, AUTHENTICATED, BAD_AUTHENTICATION, CREATED_USER_SUCCESS
 	}
 
 	public interface Listener {
@@ -26,10 +26,6 @@ public class LoginTask extends AsyncTask<Boolean, Void, LoginTask.Result> {
 		void onAuthenticated();
 
 		void onBadAuthentication();
-
-		void onErrorCreatingAdmin();
-
-		void onCreatedAdmin();
 
 		void onCreatedUser();
 	}
@@ -51,36 +47,12 @@ public class LoginTask extends AsyncTask<Boolean, Void, LoginTask.Result> {
 			return Result.BAD_AUTHENTICATION;
 		}
 
-		if (storage.userCount() == 0) {
-			// first time login, designate user as the admin
-			User u = new User();
-			u.setName(username);
-			u.setPassword(password);
-
-			long id = storage.addUser(u);
-			if (id != 1) {
-				return Result.ERROR_CREATING_ADMIN;
-			} else {
-				return Result.CREATED_ADMIN_SUCCESS;
-			}
-		}
-
-		if (params[0]) {
-
-		}
-
 		return Result.NEW_USER;
 	}
 
 	@Override
 	protected void onPostExecute(Result result) {
 		switch (result) {
-		case ERROR_CREATING_ADMIN:
-			listener.onErrorCreatingAdmin();
-			break;
-		case CREATED_ADMIN_SUCCESS:
-			listener.onCreatedAdmin();
-			break;
 		case BAD_AUTHENTICATION:
 			listener.onBadAuthentication();
 			break;
