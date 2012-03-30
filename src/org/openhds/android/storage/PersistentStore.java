@@ -89,6 +89,7 @@ public class PersistentStore {
 				+ FORM_TABLE_NAME + " WHERE " + KEY_REMOTE_ID + " = ?",
 				new String[] { fs.getRemoteId() + "" });
 		if (cnt > 0) {
+			db.close();
 			return;
 		}
 
