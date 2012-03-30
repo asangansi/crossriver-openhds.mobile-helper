@@ -11,6 +11,7 @@ public class FormSubmissionRecord {
 	private String saveDate;
 	private String odkUri;
 	private String formId;
+	private boolean completed;
 	private List<String> errors = new ArrayList<String>();
 
 	public void setFormOwnerId(String text) {
@@ -75,5 +76,13 @@ public class FormSubmissionRecord {
 
 	public void setFormId(String formId) {
 		this.formId = formId;
+	}
+
+	public boolean isCompleted() {
+		return completed;
+	}
+
+	public void setCompleted(boolean completed) {
+		this.completed = completed;
 	}
 }

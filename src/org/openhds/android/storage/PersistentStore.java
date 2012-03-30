@@ -32,12 +32,13 @@ public class PersistentStore {
 	public static final String KEY_FORM_DATETIME = "form_datetime";
 	public static final String KEY_ODK_URI = "odk_uri";
 	public static final String KEY_ODK_FORM_ID = "form_id";
+	public static final String KEY_FORM_COMPLETED = "form_completed";
 	private static final String FORM_DB_CREATE = "CREATE TABLE "
 			+ FORM_TABLE_NAME + " (" + KEY_ID + " INTEGER PRIMARY KEY, "
 			+ KEY_FORMOWNER_ID + " TEXT, " + KEY_FORM_TYPE + " TEXT, "
 			+ KEY_FORM_INSTANCE + " TEXT, " + KEY_FORM_DATETIME + " TEXT, "
 			+ KEY_REMOTE_ID + " INTEGER, " + KEY_ODK_URI + " TEXT, "
-			+ KEY_ODK_FORM_ID + " TEXT)";
+			+ KEY_ODK_FORM_ID + " TEXT, " + KEY_FORM_COMPLETED + " INTEGER DEFAULT 0)";
 
 	private static final String ERROR_TABLE_NAME = "formsubmission_msg";
 	public static final String KEY_FORM_ID = "form_id";
@@ -102,6 +103,8 @@ public class PersistentStore {
 		} finally {
 			db.endTransaction();
 		}
+		
+		db.close();
 	}
 
 	private String getCurrentDateTime() {
@@ -194,6 +197,7 @@ public class PersistentStore {
 				.getColumnIndex(KEY_FORM_DATETIME)));
 		record.setOdkUri(cursor.getString(cursor.getColumnIndex(KEY_ODK_URI)));
 		record.setFormId(cursor.getString(cursor.getColumnIndex(KEY_ODK_FORM_ID)));
+		record.setCompleted(cursor.getInt(cursor.getColumnIndex(KEY_FORM_COMPLETED)) == 0 ? false : true);
 		cursor.close();
 
 		cursor = db.query(ERROR_TABLE_NAME, null, KEY_FORM_ID + " = ?",
@@ -209,13 +213,25 @@ public class PersistentStore {
 	}
 
 	public void updateOdkUri(long id, Uri uri) {
-		SQLiteDatabase db = dbHelper.getWritableDatabase();
 		ContentValues cv = new ContentValues();
 		cv.put(KEY_ODK_URI, uri.toString());
+		
+		updateFormSubmission(id, cv);
+	}
+	
+	private void updateFormSubmission(long id, ContentValues values) {
+		SQLiteDatabase db = dbHelper.getWritableDatabase();
 		db.beginTransaction();
-		db.update(FORM_TABLE_NAME, cv, KEY_ID + " = ?", new String[]{id + ""});
+		db.update(FORM_TABLE_NAME, values, KEY_ID + " = ?", new String[]{id + ""});
 		db.setTransactionSuccessful();
 		db.endTransaction();
 		db.close();
+	}
+
+	public void updateCompleteStatus(long id, boolean completed) {
+		ContentValues cv = new ContentValues();
+		cv.put(KEY_FORM_COMPLETED, completed ? 1 : 0);
+		
+		updateFormSubmission(id, cv);
 	}
 }
