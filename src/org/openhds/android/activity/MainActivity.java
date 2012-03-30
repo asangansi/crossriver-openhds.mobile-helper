@@ -6,6 +6,8 @@ import org.openhds.android.R;
 import org.openhds.android.tasks.AbstractHttpTask.RequestContext;
 import org.openhds.android.tasks.DownloadFormsTask;
 
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -15,6 +17,8 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 
 public class MainActivity extends AbstractActivity {
+	
+	private Dialog dialog;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -44,6 +48,7 @@ public class MainActivity extends AbstractActivity {
 
 	private class DownloadButtonListener implements OnClickListener {
 		public void onClick(View arg0) {
+			dialog = ProgressDialog.show(MainActivity.this, "Working", "Downloading all forms...");
 			URL parsedUrl = getServerUrl("/api/form/download");
 			if (parsedUrl == null) {
 				return;
@@ -56,22 +61,27 @@ public class MainActivity extends AbstractActivity {
 			DownloadFormsTask task = new DownloadFormsTask(requestCtx,
 					new DownloadFormsTask.TaskListener() {
 						public void onFailedAuthentication() {
+							dialog.dismiss();
 							showToastWithText("Bad username and/or password");
 						}
 
 						public void onFailure() {
+							dialog.dismiss();
 							showToastWithText("There was a problem reading response from server");
 						}
 
 						public void onConnectionError() {
+							dialog.dismiss();
 							showToastWithText("There was a error with the network connection");
 						}
 
 						public void onConnectionTimeout() {
+							dialog.dismiss();
 							showToastWithText("Connection to the server timed out");
 						}
 
 						public void onSuccess() {
+							dialog.dismiss();
 							showToastWithText("Download all forms successfully");
 						}
 					}, getBaseContext());

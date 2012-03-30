@@ -140,6 +140,11 @@ public class DownloadFormsTask extends AbstractHttpTask<Void, Void> {
 			} else if (isStartTag(eventType) && "formId".equals(parser.getName())) {
 				checkTextPresent(parser);
 				record.setFormId(parser.getText());
+			} else if (isStartTag(eventType) && "id".equals(parser.getName())) {
+				checkTextPresent(parser);
+				try {
+					record.setRemoteId(Integer.parseInt(parser.getText()));
+				} catch(NumberFormatException e) { }
 			}
 		}
 

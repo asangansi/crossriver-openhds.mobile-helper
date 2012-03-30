@@ -38,7 +38,8 @@ public class PersistentStore {
 			+ KEY_FORMOWNER_ID + " TEXT, " + KEY_FORM_TYPE + " TEXT, "
 			+ KEY_FORM_INSTANCE + " TEXT, " + KEY_FORM_DATETIME + " TEXT, "
 			+ KEY_REMOTE_ID + " INTEGER, " + KEY_ODK_URI + " TEXT, "
-			+ KEY_ODK_FORM_ID + " TEXT, " + KEY_FORM_COMPLETED + " INTEGER DEFAULT 0)";
+			+ KEY_ODK_FORM_ID + " TEXT, " + KEY_FORM_COMPLETED
+			+ " INTEGER DEFAULT 0)";
 
 	private static final String ERROR_TABLE_NAME = "formsubmission_msg";
 	public static final String KEY_FORM_ID = "form_id";
@@ -55,7 +56,7 @@ public class PersistentStore {
 			+ KEY_USER_NAME + " TEXT, " + KEY_USER_PASS + " TEXT)";
 
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat(
-			"yyyy-MM-dd_HH_mm_ss");
+			"yyyy-MM-dd_HH_mm_ss_SSS");
 
 	private static class DbHelper extends SQLiteOpenHelper {
 
@@ -83,6 +84,14 @@ public class PersistentStore {
 
 	public void saveFormSubmission(FormSubmissionRecord fs) {
 		SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+		long cnt = DatabaseUtils.longForQuery(db, "SELECT COUNT(_id) FROM "
+				+ FORM_TABLE_NAME + " WHERE " + KEY_REMOTE_ID + " = ?",
+				new String[] { fs.getRemoteId() + "" });
+		if (cnt > 0) {
+			return;
+		}
+
 		db.beginTransaction();
 		try {
 			ContentValues cv = new ContentValues();
@@ -91,6 +100,7 @@ public class PersistentStore {
 			cv.put(KEY_FORM_INSTANCE, fs.getPartialForm());
 			cv.put(KEY_FORM_DATETIME, getCurrentDateTime());
 			cv.put(KEY_ODK_FORM_ID, fs.getFormId());
+			cv.put(KEY_REMOTE_ID, fs.getRemoteId());
 			long rowId = db.insert(FORM_TABLE_NAME, null, cv);
 
 			for (String error : fs.getErrors()) {
@@ -103,7 +113,7 @@ public class PersistentStore {
 		} finally {
 			db.endTransaction();
 		}
-		
+
 		db.close();
 	}
 
@@ -190,14 +200,18 @@ public class PersistentStore {
 		record.setId(cursor.getLong(cursor.getColumnIndex(KEY_ID)));
 		record.setFormOwnerId(cursor.getString(cursor
 				.getColumnIndex(KEY_FORMOWNER_ID)));
-		record.setFormType(cursor.getString(cursor.getColumnIndex(KEY_FORM_TYPE)));
+		record.setFormType(cursor.getString(cursor
+				.getColumnIndex(KEY_FORM_TYPE)));
 		record.setPartialForm(cursor.getString(cursor
 				.getColumnIndex(KEY_FORM_INSTANCE)));
 		record.setSaveDate(cursor.getString(cursor
 				.getColumnIndex(KEY_FORM_DATETIME)));
 		record.setOdkUri(cursor.getString(cursor.getColumnIndex(KEY_ODK_URI)));
-		record.setFormId(cursor.getString(cursor.getColumnIndex(KEY_ODK_FORM_ID)));
-		record.setCompleted(cursor.getInt(cursor.getColumnIndex(KEY_FORM_COMPLETED)) == 0 ? false : true);
+		record.setFormId(cursor.getString(cursor
+				.getColumnIndex(KEY_ODK_FORM_ID)));
+		record.setCompleted(cursor.getInt(cursor
+				.getColumnIndex(KEY_FORM_COMPLETED)) == 0 ? false : true);
+		record.setRemoteId(cursor.getInt(cursor.getColumnIndex(KEY_REMOTE_ID)));
 		cursor.close();
 
 		cursor = db.query(ERROR_TABLE_NAME, null, KEY_FORM_ID + " = ?",
@@ -215,14 +229,15 @@ public class PersistentStore {
 	public void updateOdkUri(long id, Uri uri) {
 		ContentValues cv = new ContentValues();
 		cv.put(KEY_ODK_URI, uri.toString());
-		
+
 		updateFormSubmission(id, cv);
 	}
-	
+
 	private void updateFormSubmission(long id, ContentValues values) {
 		SQLiteDatabase db = dbHelper.getWritableDatabase();
 		db.beginTransaction();
-		db.update(FORM_TABLE_NAME, values, KEY_ID + " = ?", new String[]{id + ""});
+		db.update(FORM_TABLE_NAME, values, KEY_ID + " = ?", new String[] { id
+				+ "" });
 		db.setTransactionSuccessful();
 		db.endTransaction();
 		db.close();
@@ -231,7 +246,7 @@ public class PersistentStore {
 	public void updateCompleteStatus(long id, boolean completed) {
 		ContentValues cv = new ContentValues();
 		cv.put(KEY_FORM_COMPLETED, completed ? 1 : 0);
-		
+
 		updateFormSubmission(id, cv);
 	}
 }

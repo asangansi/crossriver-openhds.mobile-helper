@@ -11,6 +11,7 @@ public class FormSubmissionRecord {
 	private String saveDate;
 	private String odkUri;
 	private String formId;
+	private int remoteId;
 	private boolean completed;
 	private List<String> errors = new ArrayList<String>();
 
@@ -84,5 +85,13 @@ public class FormSubmissionRecord {
 
 	public void setCompleted(boolean completed) {
 		this.completed = completed;
+	}
+
+	public int getRemoteId() {
+		return remoteId;
+	}
+
+	public void setRemoteId(int remoteId) {
+		this.remoteId = remoteId;
 	}
 }
