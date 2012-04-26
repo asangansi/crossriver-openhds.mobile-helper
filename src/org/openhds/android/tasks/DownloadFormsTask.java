@@ -39,6 +39,9 @@ public class DownloadFormsTask extends AbstractHttpTask<Void, Void> {
 			StringReader reader;
 			reader = new StringReader(EntityUtils.toString(entity));
 			List<FormSubmissionRecord> records = parseResponseXml(reader);
+			for(FormSubmissionRecord rec : records) {
+				rec.setFormOwnerId(requestCtx.user);
+			}
 			saveRecords(records);
 			return EndResult.SUCCESS;
 		} catch (ParseException e) {
@@ -123,10 +126,7 @@ public class DownloadFormsTask extends AbstractHttpTask<Void, Void> {
 		while (!isEndTag(eventType)
 				|| !"formSubmission".equals(parser.getName())) {
 			eventType = parser.next();
-			if (isStartTag(eventType) && "formOwnerId".equals(parser.getName())) {
-				checkTextPresent(parser);
-				record.setFormOwnerId(parser.getText());
-			} else if (isStartTag(eventType)
+			if (isStartTag(eventType)
 					&& "formType".equals(parser.getName())) {
 				checkTextPresent(parser);
 				record.setFormType(parser.getText());
