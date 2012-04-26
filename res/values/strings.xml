@@ -21,5 +21,6 @@
     <string name="owner_txt">Form Owner Id:</string>
     <string name="failure_reasons_txt">Failure messages:</string>
     <string name="form_status">Form Status:</string>
+    <string name="delete_form_btn">Delete Form</string>
 
 </resources>

@@ -51,6 +51,15 @@ public class FormViewActivity extends AbstractActivity {
 				"Loading form submission...", true);
 		store = new PersistentStore(this);
 		new LoadRecordTask().execute();
+		Button deleteBtn = (Button) findViewById(R.id.delete_form_btn);
+		deleteBtn.setOnClickListener(new OnClickListener() {
+
+			public void onClick(View arg0) {
+				store.deleteSubmission(record.getId());
+				finish();
+			}
+			
+		});
 	}
 
 	private void loadFormSubmission() {

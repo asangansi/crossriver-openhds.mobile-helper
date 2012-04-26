@@ -3,13 +3,20 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical" >
-
-    <Button
+    <Button
         android:id="@+id/edit_in_odk_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:text="@string/send_to_odk_btn" />
+    
+   <Button
+        android:id="@+id/delete_form_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:text="@string/delete_form_btn" />
 
     <ScrollView
         android:id="@+id/scrollView1"

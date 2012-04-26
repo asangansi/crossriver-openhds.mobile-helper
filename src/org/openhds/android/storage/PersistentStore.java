@@ -250,4 +250,14 @@ public class PersistentStore {
 
 		updateFormSubmission(id, cv);
 	}
+
+	public void deleteSubmission(long id) {
+		SQLiteDatabase db = dbHelper.getWritableDatabase();
+		db.beginTransaction();
+		db.delete(FORM_TABLE_NAME, KEY_ID + " = ?", new String[] { "" + id });
+		db.delete(ERROR_TABLE_NAME, KEY_FORM_ID + " = ?", new String[] {"" + id});
+		db.setTransactionSuccessful();
+		db.endTransaction();
+		db.close();		
+	}
 }
