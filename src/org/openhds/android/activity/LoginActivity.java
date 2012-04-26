@@ -103,7 +103,7 @@ public class LoginActivity extends AbstractActivity {
 	private void executeAuthenticateTask() {
 		RequestContext requestCtx = new RequestContext();
 		requestCtx.url(getServerUrl("/api/user/authenticate"))
-				.user(getUsernameValue().toUpperCase())
+				.user(getUsernameValue())
 				.password(getPasswordValue());
 		AuthenticateTask authenticateTask = new AuthenticateTask(requestCtx,
 				new AuthenticateListener(), getPersistentStore());
@@ -156,7 +156,7 @@ public class LoginActivity extends AbstractActivity {
 	protected void showProgressDialog() {
 		showDialog(PROGRESS_DIALOG);
 		PersistentStore ps = new PersistentStore(this);
-		LoginTask loginTask = new LoginTask(ps, getUsernameValue().toUpperCase(),
+		LoginTask loginTask = new LoginTask(ps, getUsernameValue(),
 				getPasswordValue(), new LoginListener());
 		loginTask.execute(false);
 	}

@@ -22,7 +22,7 @@ public class FormListActivitity extends ListActivity {
 		String[] columns = new String[] { PersistentStore.KEY_FORM_TYPE,
 				PersistentStore.KEY_FORMOWNER_ID };
 		int[] bindTo = new int[] { android.R.id.text1, android.R.id.text2 };
-		Cursor formInstanceCursor = store.getFormsForUsername(user.toUpperCase());
+		Cursor formInstanceCursor = store.getFormsForUsername(user);
 
 		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
 				android.R.layout.simple_list_item_2, formInstanceCursor,
