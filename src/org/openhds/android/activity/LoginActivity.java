@@ -38,7 +38,7 @@ public class LoginActivity extends AbstractActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.login);
 
-		// getApplicationContext().deleteDatabase("form_submission");
+		//getApplicationContext().deleteDatabase("form_submission");
 
 		Button loginBtn = (Button) findViewById(R.id.login_btn);
 		userTxt = (TextView) findViewById(R.id.user_txt);

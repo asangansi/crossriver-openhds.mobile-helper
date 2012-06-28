@@ -13,6 +13,7 @@ public class FormSubmissionRecord {
 	private String formId;
 	private int remoteId;
 	private boolean completed;
+	private boolean needReview;
 	private List<String> errors = new ArrayList<String>();
 
 	public void setFormOwnerId(String text) {
@@ -93,5 +94,13 @@ public class FormSubmissionRecord {
 
 	public void setRemoteId(int remoteId) {
 		this.remoteId = remoteId;
+	}
+
+	public boolean isNeedReview() {
+		return needReview;
+	}
+
+	public void setNeedReview(boolean needReview) {
+		this.needReview = needReview;
 	}
 }

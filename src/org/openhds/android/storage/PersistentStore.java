@@ -33,13 +33,14 @@ public class PersistentStore {
 	public static final String KEY_ODK_URI = "odk_uri";
 	public static final String KEY_ODK_FORM_ID = "form_id";
 	public static final String KEY_FORM_COMPLETED = "form_completed";
+	public static final String KEY_REVIEW = "form_review";
 	private static final String FORM_DB_CREATE = "CREATE TABLE "
 			+ FORM_TABLE_NAME + " (" + KEY_ID + " INTEGER PRIMARY KEY, "
 			+ KEY_FORMOWNER_ID + " TEXT, " + KEY_FORM_TYPE + " TEXT, "
 			+ KEY_FORM_INSTANCE + " TEXT, " + KEY_FORM_DATETIME + " TEXT, "
 			+ KEY_REMOTE_ID + " INTEGER, " + KEY_ODK_URI + " TEXT, "
 			+ KEY_ODK_FORM_ID + " TEXT, " + KEY_FORM_COMPLETED
-			+ " INTEGER DEFAULT 0)";
+			+ " INTEGER DEFAULT 0, " + KEY_REVIEW + " INTEGER DEFAULT 0)";
 
 	private static final String ERROR_TABLE_NAME = "formsubmission_msg";
 	public static final String KEY_FORM_ID = "form_id";
@@ -92,6 +93,10 @@ public class PersistentStore {
 			db.close();
 			return;
 		}
+		
+		if (fs.getErrors().size() == 0) {
+			fs.setNeedReview(true);
+		}
 
 		db.beginTransaction();
 		try {
@@ -102,6 +107,7 @@ public class PersistentStore {
 			cv.put(KEY_FORM_DATETIME, getCurrentDateTime());
 			cv.put(KEY_ODK_FORM_ID, fs.getFormId());
 			cv.put(KEY_REMOTE_ID, fs.getRemoteId());
+			cv.put(KEY_REVIEW, fs.isNeedReview() ? 1 : 0);
 			long rowId = db.insert(FORM_TABLE_NAME, null, cv);
 
 			for (String error : fs.getErrors()) {
@@ -189,7 +195,7 @@ public class PersistentStore {
 	}
 
 	private String[] getFormColumns() {
-		return new String[] { KEY_ID, KEY_FORM_TYPE, KEY_FORMOWNER_ID };
+		return new String[] { KEY_ID, KEY_FORM_TYPE, KEY_FORMOWNER_ID, KEY_REVIEW };
 	}
 
 	public FormSubmissionRecord findSubmissionById(long id) {
@@ -212,6 +218,8 @@ public class PersistentStore {
 				.getColumnIndex(KEY_ODK_FORM_ID)));
 		record.setCompleted(cursor.getInt(cursor
 				.getColumnIndex(KEY_FORM_COMPLETED)) == 0 ? false : true);
+		record.setNeedReview(cursor.getInt(cursor
+				.getColumnIndex(KEY_REVIEW)) == 0 ? false : true);
 		record.setRemoteId(cursor.getInt(cursor.getColumnIndex(KEY_REMOTE_ID)));
 		cursor.close();
 
