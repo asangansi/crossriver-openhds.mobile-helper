@@ -82,6 +82,11 @@ public class MainActivity extends AbstractActivity {
 							dialog.dismiss();
 							showToastWithText("Download all forms successfully");
 						}
+
+						public void onNoContent() {
+							dialog.dismiss();
+							showToastWithText("No forms to download");							
+						}
 					}, getBaseContext());
 			task.execute();
 		}

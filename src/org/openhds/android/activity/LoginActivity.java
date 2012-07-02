@@ -235,6 +235,10 @@ public class LoginActivity extends AbstractActivity {
 		public void onFailure() {
 			removeAndShow(DIALOG_ERROR_USER);
 		}
+
+		public void onNoContent() {
+			
+		}
 	}
 
 	private void removeAndShow(int toShow) {

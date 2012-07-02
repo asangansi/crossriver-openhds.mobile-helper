@@ -21,6 +21,7 @@ public abstract class AbstractHttpTask<Params, Progress> extends
 		AsyncTask<Params, Progress, AbstractHttpTask.EndResult> {
 	private static final int UNAUTHORIZED_STATUS_CODE = 401;
 	private static final int SUCCESS_STATUS_CODE = 200;
+	private static final int NO_CONTENT_CODE = 204;
 
 	protected RequestContext requestCtx;
 	private TaskListener listener;
@@ -31,7 +32,7 @@ public abstract class AbstractHttpTask<Params, Progress> extends
 	}
 
 	static enum EndResult {
-		BAD_AUTHENTICATION, CONNECTION_ERROR, CONNECTION_TIMEOUT, SUCCESS, FAILURE
+		BAD_AUTHENTICATION, CONNECTION_ERROR, CONNECTION_TIMEOUT, SUCCESS, FAILURE, NO_CONTENT
 	}
 
 	public interface TaskListener {
@@ -44,6 +45,8 @@ public abstract class AbstractHttpTask<Params, Progress> extends
 		void onSuccess();
 
 		void onFailure();
+
+		void onNoContent();
 	}
 
 	public static class RequestContext {
@@ -73,13 +76,16 @@ public abstract class AbstractHttpTask<Params, Progress> extends
 				requestCtx.password);
 		try {
 			HttpResponse response = executeGet(httpClient, requestCtx.url);
-			if (authenticationFailed(response.getStatusLine().getStatusCode())) {
+			switch(response.getStatusLine().getStatusCode()) {
+			case SUCCESS_STATUS_CODE:
+				return handleResponseData(response);
+			case NO_CONTENT_CODE:
+				return EndResult.NO_CONTENT;
+			case UNAUTHORIZED_STATUS_CODE:
 				return EndResult.BAD_AUTHENTICATION;
-			} else if (!isRequestSuccess(response.getStatusLine()
-					.getStatusCode())) {
+			default:
 				return EndResult.CONNECTION_ERROR;
 			}
-			return handleResponseData(response);
 		} catch (ClientProtocolException e) {
 			return EndResult.CONNECTION_ERROR;
 		} catch (ConnectTimeoutException e) {
@@ -120,14 +126,6 @@ public abstract class AbstractHttpTask<Params, Progress> extends
 		return client.execute(host, httpget);
 	}
 
-	private boolean authenticationFailed(int statusCode) {
-		return statusCode == UNAUTHORIZED_STATUS_CODE;
-	}
-
-	private boolean isRequestSuccess(int statusCode) {
-		return statusCode == SUCCESS_STATUS_CODE;
-	}
-
 	@Override
 	protected void onPostExecute(DownloadFormsTask.EndResult result) {
 		switch (result) {
@@ -145,6 +143,10 @@ public abstract class AbstractHttpTask<Params, Progress> extends
 			break;
 		case SUCCESS:
 			listener.onSuccess();
+			break;
+		case NO_CONTENT:
+			listener.onNoContent();
+			break;
 		}
 	}
 

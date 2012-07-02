@@ -42,6 +42,7 @@ public class DownloadFormsTask extends AbstractHttpTask<Void, Void> {
 			for(FormSubmissionRecord rec : records) {
 				rec.setFormOwnerId(requestCtx.user);
 			}
+			
 			saveRecords(records);
 			return EndResult.SUCCESS;
 		} catch (ParseException e) {
